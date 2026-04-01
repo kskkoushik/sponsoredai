@@ -6,6 +6,7 @@ A chatbot that blends sponsored ads into responses using RAG.
 import streamlit as st
 import re
 import os
+from datetime import datetime
 from dotenv import load_dotenv
 from vector_store import search_ads, get_vector_store
 from llm_service import create_llm_service
@@ -36,8 +37,7 @@ st.markdown("""
         padding: 1rem;
         border-radius: 0.5rem;
         margin-bottom: 0.5rem;
-        line-height: 1.6;|
-        
+        line-height: 1.6;
     }
     .user-message {
         background-color: #1a1a2e;
@@ -344,6 +344,9 @@ def main():
         with st.spinner("Finding relevant content..."):
             relevant_ads = search_ads(prompt, n_results=2)
 
+        # Companies whose ads were retrieved — these are the definitive sponsors
+        injected_companies = [ad["company"] for ad in relevant_ads]
+
         # Generate streaming response
         response_placeholder = st.empty()
         full_response = ""
@@ -357,15 +360,22 @@ def main():
                     unsafe_allow_html=True
                 )
 
-            # Compute cost metadata
-            cost = calculate_message_cost(prompt, full_response)
+            # Compute cost metadata — pass injected companies so analytics
+            # correctly reflect which sponsors were shown even when the LLM
+            # writes product names instead of company names.
+            cost = calculate_message_cost(
+                prompt,
+                full_response,
+                injected_ad_companies=injected_companies,
+            )
 
-            # Save to history
+            # Save to history with timestamp for timeline charts
             assistant_msg_index = len([m for m in st.session_state.messages if m["role"] == "assistant"])
             st.session_state.messages.append({"role": "assistant", "content": full_response})
             st.session_state.cost_history.append({
                 "msg_index": assistant_msg_index,
                 "prompt_snippet": prompt[:80] + ("…" if len(prompt) > 80 else ""),
+                "timestamp": datetime.now().isoformat(timespec="seconds"),
                 "cost": cost,
             })
 

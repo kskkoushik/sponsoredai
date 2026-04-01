@@ -72,20 +72,27 @@ def calculate_message_cost(
     prompt: str,
     response: str,
     system_prompt_approx: str = "",
+    injected_ad_companies: list[str] | None = None,
 ) -> dict:
     """
     Calculate the full cost breakdown for one query-response pair.
 
     Args:
-        prompt:              The user's question / input text.
-        response:            The full AI response text.
-        system_prompt_approx: Optional system prompt text for more accurate token counts.
+        prompt:                 The user's question / input text.
+        response:               The full AI response text.
+        system_prompt_approx:   Optional system prompt text for more accurate token counts.
+        injected_ad_companies:  Companies from ads that were retrieved via RAG and
+                                injected into the prompt.  These are the definitive
+                                sponsored orgs for this interaction — we use them as
+                                the primary source so analytics always reflect which
+                                sponsors were actually shown, regardless of how the
+                                LLM chose to word the response.
 
     Returns a dict with keys:
         input_tokens        – estimated tokens sent to the model
         output_tokens       – estimated tokens in the response
         original_cost_usd   – raw API cost at GPT-5.2 prices
-        orgs_featured       – list of company names found in [SPONSORED] blocks
+        orgs_featured       – deduplicated list of sponsored company names
         revenue_earned_usd  – $0.005 × number of unique orgs featured
         your_cost_usd       – max(0, original_cost - revenue_earned)
         savings_usd         – amount saved / revenue offset
@@ -100,11 +107,24 @@ def calculate_message_cost(
     output_cost = (output_tokens / 1_000_000) * GPT52_PRICING["output_per_1m_tokens"]
     original_cost_usd = input_cost + output_cost
 
-    # Sponsored revenue
-    orgs_featured = extract_sponsored_orgs(response)
+    # ── Sponsored org detection ───────────────────────────────────────────────
+    # Primary source: companies whose ads were retrieved by RAG and injected
+    # into the system prompt.  These are definitively the sponsors for this
+    # response, irrespective of how the LLM phrased the recommendation.
+    if injected_ad_companies:
+        orgs_featured = list(dict.fromkeys(injected_ad_companies))  # deduplicate, preserve order
+    else:
+        orgs_featured = []
+
+    # Secondary source: any additional company names found inside the
+    # [SPONSORED]…[/SPONSORED] blocks that weren't in the injected list.
+    for org in extract_sponsored_orgs(response):
+        if org not in orgs_featured:
+            orgs_featured.append(org)
+
+    # ── Revenue & net cost ────────────────────────────────────────────────────
     revenue_earned_usd = len(orgs_featured) * REVENUE_PER_ORG_USD
 
-    # Net cost (cannot go below zero)
     your_cost_usd = max(0.0, original_cost_usd - revenue_earned_usd)
     savings_usd = min(revenue_earned_usd, original_cost_usd)
 
