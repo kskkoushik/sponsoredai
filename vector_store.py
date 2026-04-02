@@ -1,6 +1,9 @@
 """
 Vector Store module using ChromaDB for RAG-based ad retrieval.
+Now uses a persistent ChromaDB client so the index survives restarts.
 """
+
+import os
 
 import chromadb
 from chromadb.utils import embedding_functions
@@ -13,24 +16,30 @@ EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
 class AdVectorStore:
     """ChromaDB-based vector store for sponsored ads."""
-    
+
     def __init__(self, persist_directory: str = "./chroma_db"):
         """Initialize the vector store."""
         self.persist_directory = persist_directory
+
+        # Ensure the persistence directory exists
+        os.makedirs(self.persist_directory, exist_ok=True)
+
         self.embedding_function = embedding_functions.SentenceTransformerEmbeddingFunction(
             model_name=EMBEDDING_MODEL
         )
-        
-        # Initialize ChromaDB client
-        self.client = chromadb.Client()  # In-memory for demo
-        
+
+        # Initialize persistent ChromaDB client
+        # This writes index data under self.persist_directory and reuses it
+        # across process restarts.
+        self.client = chromadb.PersistentClient(path=self.persist_directory)
+
         # Create or get collection
         self.collection = self.client.get_or_create_collection(
             name="sponsored_ads",
             embedding_function=self.embedding_function,
-            metadata={"description": "Sponsored advertisements for RAG"}
+            metadata={"description": "Sponsored advertisements for RAG"},
         )
-        
+
         # Initialize ads if collection is empty
         if self.collection.count() == 0:
             self._initialize_ads()
