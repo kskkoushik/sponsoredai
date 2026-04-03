@@ -6,13 +6,16 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 
 
-# Character limits per platform (hard limits enforced by each network)
+# Character limits per platform (hard limits enforced by each network).
+# Keys include common aliases so lookups work regardless of how the frontend
+# labels the platform (e.g. "Twitter" vs "Twitter/X").
 PLATFORM_LIMITS: Dict[str, int] = {
-    "Twitter":  280,
-    "Bluesky":  300,
-    "Threads":  500,
-    "LinkedIn": 3000,
-    "Reddit":   40000,
+    "Twitter":    280,
+    "Twitter/X":  280,
+    "Bluesky":    300,
+    "Threads":    500,
+    "LinkedIn":   3000,
+    "Reddit":     40000,
 }
 
 SYSTEM_PROMPT = """You are an expert social media content strategist.
@@ -112,10 +115,26 @@ def generate_platform_posts(idea: str, platforms: List[str]) -> Dict[str, str]:
         }
     )
 
-    # Normalise — always return plain str values
+    # Normalise — always return plain str values.
+    # The LLM may return variant key names (e.g. "Twitter" instead of "Twitter/X"),
+    # so build a case-insensitive lookup from the raw result.
+    _lower_result = {k.lower(): v for k, v in result.items()}
+    _ALIASES: Dict[str, List[str]] = {
+        "twitter/x": ["twitter/x", "twitter", "x"],
+        "bluesky":   ["bluesky"],
+        "threads":   ["threads"],
+        "linkedin":  ["linkedin"],
+        "reddit":    ["reddit"],
+    }
+
     normalized: Dict[str, str] = {}
     for p in platforms:
         value = result.get(p, "")
+        if not value:
+            for alias in _ALIASES.get(p.lower(), [p.lower()]):
+                value = _lower_result.get(alias, "")
+                if value:
+                    break
         if isinstance(value, dict):
             value = value.get("text", "")
         normalized[p] = str(value).strip()

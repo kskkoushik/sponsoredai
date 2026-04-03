@@ -11,8 +11,8 @@ from ads_data import get_all_ads
 # ──────────────────────────────────────────────
 GPT52_PRICING = {
     "model": "GPT-5.2",
-    "input_per_1m_tokens": 2.50,   # $2.50 per 1M input tokens
-    "output_per_1m_tokens": 10.00, # $10.00 per 1M output tokens
+    "input_per_1m_tokens": 30.00,   # $30.00 per 1M input tokens
+    "output_per_1m_tokens": 60.00,  # $60.00 per 1M output tokens
 }
 
 # Revenue per sponsored organisation shown in the response

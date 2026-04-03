@@ -1,0 +1,1952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sponsored AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+  <style>
+    /* ═══════════════════════════════════════════════════════════
+       DESIGN TOKENS  (memorae.ai-inspired dark palette)
+    ═══════════════════════════════════════════════════════════ */
+    :root {
+      --bg:          #07070e;
+      --bg2:         #0d0d1b;
+      --bg3:         #12121f;
+      --bg4:         #171728;
+      --border:      rgba(255,255,255,0.07);
+      --border2:     rgba(255,255,255,0.12);
+      --blue:        #5b6af8;
+      --blue-light:  #7b8bff;
+      --blue-glow:   rgba(91,106,248,0.18);
+      --green:       #22c55e;
+      --green-glow:  rgba(34,197,94,0.12);
+      --orange:      #f97316;
+      --red:         #ef4444;
+      --gold:        #f59e0b;
+      --purple:      #8b5cf6;
+      --tx:          #eeeef5;
+      --tx2:         #9090b0;
+      --tx3:         #55557a;
+      --sponsored:   #60a5fa;
+      --regular:     #4ade80;
+      --sidebar-w:   268px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--tx);
+      overflow: hidden;
+    }
+
+    /* ── Layout shell ───────────────────────────────────────── */
+    .shell {
+      display: flex;
+      height: 100vh;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       SIDEBAR
+    ══════════════════════════════════════════════════════════ */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Brand */
+    .sb-brand {
+      padding: 1.4rem 1.4rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .sb-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin-bottom: 0.2rem;
+    }
+    .sb-logo-icon {
+      width: 38px; height: 38px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.15rem;
+      flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(91,106,248,0.35);
+    }
+    .sb-logo-name {
+      font-size: 1.18rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--blue-light) 0%, #c4b5fd 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.02em;
+    }
+    .sb-tagline {
+      font-size: 0.71rem;
+      color: var(--tx3);
+      padding-left: 0.1rem;
+      letter-spacing: 0.01em;
+    }
+
+    /* Nav */
+    .sb-nav {
+      flex: 1;
+      padding: 1rem 0.8rem;
+      overflow-y: auto;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.72rem 0.85rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      color: var(--tx2);
+      font-size: 0.88rem;
+      font-weight: 500;
+      margin-bottom: 0.2rem;
+      border: 1px solid transparent;
+      user-select: none;
+    }
+    .nav-item:hover { background: var(--bg4); color: var(--tx); }
+    .nav-item.active {
+      background: var(--blue-glow);
+      color: var(--blue-light);
+      border-color: rgba(91,106,248,0.22);
+    }
+    .nav-icon { font-size: 1.05rem; width: 22px; text-align: center; flex-shrink: 0; }
+    .nav-label { flex: 1; }
+
+    /* Status badges */
+    .sb-section {
+      padding: 0.9rem 1.4rem;
+      border-top: 1px solid var(--border);
+    }
+    .sb-section-label {
+      font-size: 0.67rem;
+      color: var(--tx3);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.55rem;
+      font-weight: 600;
+    }
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.78rem;
+      color: var(--tx2);
+      margin-bottom: 0.35rem;
+    }
+    .s-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .s-dot.ok  { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .s-dot.err { background: var(--red);   box-shadow: 0 0 6px var(--red); }
+
+    /* Session stats */
+    .stat-mini-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.28rem;
+    }
+    .stat-mini-name  { font-size: 0.78rem; color: var(--tx2); }
+    .stat-mini-val   { font-size: 0.78rem; font-weight: 600; color: var(--tx); }
+    .stat-mini-val.g { color: var(--green); }
+    .stat-mini-val.b { color: var(--blue-light); }
+
+    /* Clear button */
+    .btn-clear {
+      margin: 0.4rem 1.1rem 1rem;
+      padding: 0.58rem 1rem;
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.18);
+      border-radius: 9px;
+      color: #fca5a5;
+      font-family: inherit;
+      font-size: 0.83rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.18s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+    .btn-clear:hover { background: rgba(239,68,68,0.16); border-color: rgba(239,68,68,0.3); }
+
+    /* ══════════════════════════════════════════════════════════
+       MAIN AREA
+    ══════════════════════════════════════════════════════════ */
+    .main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Pages */
+    .page {
+      display: none;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .page.active {
+      display: flex;
+      flex-direction: column;
+    }
+    /* Scrollable non-chat pages */
+    .page.scrollable {
+      overflow-y: auto;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       CHAT PAGE
+    ══════════════════════════════════════════════════════════ */
+    .chat-header {
+      flex-shrink: 0;
+      padding: 1.1rem 1.6rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(13,13,27,0.85);
+      backdrop-filter: blur(14px);
+    }
+    .chat-header h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.15rem;
+    }
+    .chat-header p  { font-size: 0.82rem; color: var(--tx2); }
+    .legend-strip {
+      display: flex;
+      gap: 1.25rem;
+      margin-top: 0.65rem;
+    }
+    .legend-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.76rem;
+      color: var(--tx2);
+    }
+    .legend-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+
+    .chat-messages {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 1.4rem 1.6rem;
+    }
+
+    /* Empty state */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      text-align: center;
+      color: var(--tx3);
+      padding: 2rem;
+    }
+    .empty-icon  { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+    .empty-state h3 { font-size: 1.05rem; color: var(--tx2); margin-bottom: 0.4rem; }
+    .empty-state p  { font-size: 0.84rem; line-height: 1.65; max-width: 360px; }
+
+    /* Messages */
+    .message {
+      margin-bottom: 1.2rem;
+      animation: fadeUp 0.28s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .msg-role {
+      font-size: 0.71rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.35rem;
+    }
+    .msg-role.user { color: var(--green); }
+    .msg-role.ai   { color: var(--blue-light); }
+
+    .msg-bubble {
+      padding: 0.9rem 1.15rem;
+      border-radius: 13px;
+      line-height: 1.72;
+      font-size: 0.94rem;
+    }
+    .msg-bubble.user {
+      background: rgba(34,197,94,0.07);
+      border: 1px solid rgba(34,197,94,0.14);
+      border-left: 3px solid var(--green);
+    }
+    .msg-bubble.ai {
+      background: rgba(91,106,248,0.07);
+      border: 1px solid rgba(91,106,248,0.14);
+      border-left: 3px solid var(--blue);
+    }
+
+    .sponsored-text { color: var(--sponsored); font-weight: 500; }
+    .regular-text   { color: var(--regular); }
+
+    /* Cost meta card */
+    .cost-meta {
+      margin-top: 0.5rem;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 0.8rem 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.9rem 1.2rem;
+      align-items: flex-start;
+    }
+    .cm-item { display: flex; flex-direction: column; min-width: 88px; }
+    .cm-label {
+      font-size: 0.67rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--tx3);
+      margin-bottom: 0.2rem;
+    }
+    .cm-val { font-size: 0.84rem; font-weight: 600; color: var(--tx); }
+    .cm-val.g { color: var(--green); }
+    .cm-val.b { color: var(--blue-light); }
+    .cm-val.x { color: var(--tx3); text-decoration: line-through; }
+    .org-chip {
+      display: inline-block;
+      background: rgba(91,106,248,0.12);
+      color: var(--blue-light);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 0.7rem;
+      margin: 1px;
+    }
+    .cm-footer {
+      width: 100%;
+      border-top: 1px solid var(--border);
+      padding-top: 0.45rem;
+      margin-top: 0.1rem;
+      font-size: 0.67rem;
+      color: var(--tx3);
+    }
+
+    /* Typing indicator */
+    .typing {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--tx3);
+      font-size: 0.82rem;
+      margin-bottom: 1rem;
+    }
+    .typing-dots { display: flex; gap: 3px; }
+    .typing-dot {
+      width: 5px; height: 5px;
+      background: var(--blue);
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%,60%,100% { transform: translateY(0); }
+      30%          { transform: translateY(-5px); }
+    }
+
+    /* Chat input */
+    .chat-input-area {
+      flex-shrink: 0;
+      padding: 0.9rem 1.6rem 1.3rem;
+      border-top: 1px solid var(--border);
+      background: rgba(13,13,27,0.9);
+      backdrop-filter: blur(14px);
+    }
+    .input-wrap {
+      display: flex;
+      gap: 0.7rem;
+      align-items: flex-end;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 0.7rem 0.9rem;
+      transition: border-color 0.2s;
+    }
+    .input-wrap:focus-within { border-color: var(--blue); }
+    .chat-ta {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--tx);
+      font-family: inherit;
+      font-size: 0.93rem;
+      resize: none;
+      min-height: 22px;
+      max-height: 120px;
+      line-height: 1.55;
+    }
+    .chat-ta::placeholder { color: var(--tx3); }
+    .send-btn {
+      width: 36px; height: 36px;
+      background: var(--blue);
+      border: none;
+      border-radius: 9px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.18s;
+    }
+    .send-btn:hover:not(:disabled) { background: var(--blue-light); transform: scale(1.06); }
+    .send-btn:disabled { background: var(--bg4); cursor: not-allowed; }
+    .send-btn svg { display: block; }
+
+    /* ══════════════════════════════════════════════════════════
+       SHARED PAGE ELEMENTS
+    ══════════════════════════════════════════════════════════ */
+    .pg-header {
+      padding: 1.8rem 2rem 1.1rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .pg-header h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.25rem;
+    }
+    .pg-header p { font-size: 0.84rem; color: var(--tx2); }
+
+    .pg-body { padding: 1.5rem 2rem; }
+
+    /* KPI strip */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0.9rem;
+      margin-bottom: 1.4rem;
+    }
+    .kpi-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 1.1rem 1.2rem;
+      text-align: center;
+      transition: all 0.18s;
+    }
+    .kpi-card:hover {
+      border-color: var(--blue);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(91,106,248,0.1);
+    }
+    .kpi-val   { font-size: 1.9rem; font-weight: 800; color: var(--blue-light); margin-bottom: 0.2rem; }
+    .kpi-label { font-size: 0.76rem; color: var(--tx2); text-transform: uppercase; letter-spacing: 0.07em; }
+
+    /* Section title */
+    .sec-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--tx2);
+      border-left: 3px solid var(--blue);
+      padding-left: 0.7rem;
+      margin: 1.4rem 0 0.85rem;
+      letter-spacing: 0.01em;
+    }
+
+    /* Alerts */
+    .alert {
+      padding: 0.7rem 1rem;
+      border-radius: 9px;
+      font-size: 0.85rem;
+      margin-bottom: 0.85rem;
+      line-height: 1.5;
+    }
+    .alert-info    { background: rgba(91,106,248,0.1);  border: 1px solid rgba(91,106,248,0.2);  color: #a5b4fc; }
+    .alert-success { background: rgba(34,197,94,0.1);   border: 1px solid rgba(34,197,94,0.2);   color: #86efac; }
+    .alert-warn    { background: rgba(249,115,22,0.1);  border: 1px solid rgba(249,115,22,0.2);  color: #fdba74; }
+    .alert-error   { background: rgba(239,68,68,0.1);   border: 1px solid rgba(239,68,68,0.2);   color: #fca5a5; }
+
+    /* ══════════════════════════════════════════════════════════
+       ADS GALLERY
+    ══════════════════════════════════════════════════════════ */
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.2rem;
+    }
+    .filter-select {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--tx);
+      font-family: inherit;
+      font-size: 0.88rem;
+      padding: 0.48rem 0.9rem;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .filter-select:focus { border-color: var(--blue); }
+    .filter-count { font-size: 0.82rem; color: var(--tx3); }
+
+    .ads-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 0.9rem;
+    }
+    .ad-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--blue);
+      border-radius: 12px;
+      padding: 1.15rem 1.2rem;
+      transition: all 0.18s;
+    }
+    .ad-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--blue);
+      box-shadow: 0 8px 24px rgba(91,106,248,0.1);
+    }
+    .ad-company  { font-size: 1.05rem; font-weight: 700; color: var(--blue-light); margin-bottom: 0.35rem; }
+    .ad-cat-badge {
+      display: inline-block;
+      background: var(--green-glow);
+      color: var(--green);
+      border-radius: 20px;
+      padding: 0.14rem 0.6rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      margin-bottom: 0.65rem;
+    }
+    .ad-text { font-size: 0.86rem; color: var(--tx2); line-height: 1.62; margin-bottom: 0.7rem; }
+    .ad-kws  { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+    .kw-tag  {
+      background: rgba(91,106,248,0.1);
+      color: #818cf8;
+      border-radius: 4px;
+      padding: 0.14rem 0.48rem;
+      font-size: 0.7rem;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       ANALYTICS
+    ══════════════════════════════════════════════════════════ */
+    .an-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 0.85rem;
+      margin-bottom: 1.2rem;
+    }
+    @media (max-width: 1100px) { .an-kpi-grid { grid-template-columns: repeat(3,1fr); } }
+
+    .an-kpi-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.9rem 1rem;
+      text-align: center;
+    }
+    .an-kpi-val   { font-size: 1.45rem; font-weight: 800; margin: 0.22rem 0; }
+    .an-kpi-label { font-size: 0.67rem; color: var(--tx3); text-transform: uppercase; letter-spacing: 0.09em; }
+    .an-kpi-sub   { font-size: 0.67rem; color: var(--tx3); margin-top: 0.15rem; }
+
+    .charts-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.9rem;
+      margin-bottom: 0.9rem;
+    }
+    .chart-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.1rem 1.2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .chart-card .chart-wrap {
+      position: relative;
+      width: 100%;
+      height: 250px;
+    }
+    .chart-card.tall .chart-wrap { height: 210px; }
+    .chart-card.sponsors .chart-wrap { height: 100%; }
+    .chart-card canvas { display: block; }
+    .chart-title { font-size: 0.82rem; font-weight: 600; color: var(--tx2); margin-bottom: 0.9rem; border-left: 3px solid var(--blue); padding-left: 0.6rem; }
+
+    /* Table */
+    .tbl-wrap {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: auto;
+      margin-bottom: 0.9rem;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+    th {
+      background: rgba(255,255,255,0.025);
+      padding: 0.7rem 1rem;
+      text-align: left;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--tx3);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    td {
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.025);
+      color: var(--tx2);
+      white-space: nowrap;
+    }
+    tr:hover td { background: rgba(255,255,255,0.018); }
+    tr:last-child td { border-bottom: none; }
+
+    /* ══════════════════════════════════════════════════════════
+       GEO PAGE
+    ══════════════════════════════════════════════════════════ */
+    .plat-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.8rem;
+      margin-bottom: 0.9rem;
+    }
+    @media (max-width: 900px) { .plat-grid { grid-template-columns: repeat(3, 1fr); } }
+
+    .plat-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      transition: all 0.18s;
+    }
+    .plat-card.connected    { border-left: 3px solid var(--green); }
+    .plat-card.disconnected { border-left: 3px solid var(--orange); }
+    .plat-icon { font-size: 1.55rem; margin-bottom: 0.35rem; }
+    .plat-name { font-size: 0.87rem; font-weight: 600; margin-bottom: 0.45rem; }
+    .plat-badge {
+      display: inline-block;
+      border-radius: 20px;
+      padding: 0.1rem 0.58rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      margin-bottom: 0.45rem;
+    }
+    .plat-badge.connected    { background: var(--green-glow); color: var(--green); }
+    .plat-badge.disconnected { background: rgba(249,115,22,0.1); color: var(--orange); }
+
+    .btn-connect-plat {
+      width: 100%;
+      padding: 0.42rem 0.7rem;
+      background: rgba(91,106,248,0.1);
+      border: 1px solid rgba(91,106,248,0.22);
+      border-radius: 7px;
+      color: var(--blue-light);
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.18s;
+      margin-top: 0.4rem;
+    }
+    .btn-connect-plat:hover { background: rgba(91,106,248,0.18); }
+
+    .oauth-link-box {
+      background: var(--bg);
+      border: 1px solid var(--blue);
+      border-radius: 8px;
+      padding: 0.55rem 0.75rem;
+      margin-top: 0.5rem;
+      font-size: 0.74rem;
+      word-break: break-all;
+    }
+    .oauth-link-box a { color: var(--blue-light); text-decoration: none; }
+    .oauth-link-box a:hover { text-decoration: underline; }
+
+    .two-col { display: grid; grid-template-columns: 3fr 2fr; gap: 1.1rem; margin-bottom: 1rem; }
+
+    textarea.styled, input.styled {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--tx);
+      font-family: inherit;
+      font-size: 0.88rem;
+      padding: 0.6rem 0.85rem;
+      outline: none;
+      transition: border-color 0.2s;
+      display: block;
+    }
+    textarea.styled { resize: vertical; min-height: 110px; line-height: 1.55; }
+    textarea.styled:focus, input.styled:focus { border-color: var(--blue); }
+    textarea.styled::placeholder, input.styled::placeholder { color: var(--tx3); }
+
+    .form-label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--tx2);
+      margin-bottom: 0.28rem;
+      font-weight: 500;
+    }
+    .form-group { margin-bottom: 0.75rem; }
+
+    .plat-checkboxes { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.5rem; }
+    .plat-cb-label {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.38rem 0.7rem;
+      cursor: pointer;
+      font-size: 0.83rem;
+      transition: all 0.18s;
+      user-select: none;
+    }
+    .plat-cb-label input { accent-color: var(--blue); }
+    .plat-cb-label:has(input:checked) {
+      background: var(--blue-glow);
+      border-color: rgba(91,106,248,0.28);
+      color: var(--blue-light);
+    }
+
+    /* Primary button */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.78rem 1.5rem;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);
+      border: none;
+      border-radius: 11px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.94rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(91,106,248,0.25);
+    }
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(91,106,248,0.38);
+    }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Draft cards */
+    .draft-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 0.95rem 1.1rem;
+      margin-bottom: 0.7rem;
+    }
+    .draft-hdr {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-weight: 600;
+      font-size: 0.88rem;
+      margin-bottom: 0.6rem;
+    }
+    .draft-text {
+      font-size: 0.85rem;
+      color: var(--tx2);
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 0.65rem 0.8rem;
+      white-space: pre-wrap;
+      line-height: 1.6;
+      margin-bottom: 0.4rem;
+    }
+    .char-ctr { font-size: 0.7rem; text-align: right; }
+    .char-ctr.ok    { color: var(--green); }
+    .char-ctr.close { color: var(--orange); }
+    .char-ctr.over  { color: var(--red); font-weight: 700; }
+
+    .result-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.45rem;
+      font-size: 0.87rem;
+    }
+    .result-card.ok  { border-left: 3px solid var(--green); }
+    .result-card.err { border-left: 3px solid var(--red); }
+
+    /* ══════════════════════════════════════════════════════════
+       UTILITIES
+    ══════════════════════════════════════════════════════════ */
+    .spinner {
+      display: inline-block;
+      width: 15px; height: 15px;
+      border: 2px solid rgba(91,106,248,0.2);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Toast */
+    .toast-wrap {
+      position: fixed;
+      bottom: 1.4rem;
+      right: 1.4rem;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .toast {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.7rem 1rem;
+      font-size: 0.85rem;
+      animation: toastIn 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 230px;
+      max-width: 340px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+    }
+    .toast.ok  { border-left: 3px solid var(--green); }
+    .toast.err { border-left: 3px solid var(--red); }
+    .toast.info{ border-left: 3px solid var(--blue); }
+    @keyframes toastIn {
+      from { opacity:0; transform:translateX(18px); }
+      to   { opacity:1; transform:translateX(0); }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.13); }
+
+    /* Bluesky sub-form */
+    .bsky-form {
+      display: none;
+      margin-top: 0.5rem;
+      border-top: 1px solid var(--border);
+      padding-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo">
+        <div class="sb-logo-icon">💰</div>
+        <span class="sb-logo-name">Sponsored AI</span>
+      </div>
+      <p class="sb-tagline">RAG-powered sponsored chat</p>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="nav-item active" data-page="chat" onclick="navigate('chat')">
+        <span class="nav-icon">💬</span><span class="nav-label">Chat</span>
+      </div>
+      <div class="nav-item" data-page="ads" onclick="navigate('ads')">
+        <span class="nav-icon">📢</span><span class="nav-label">Ads Gallery</span>
+      </div>
+      <div class="nav-item" data-page="analytics" onclick="navigate('analytics')">
+        <span class="nav-icon">📊</span><span class="nav-label">Savings Analytics</span>
+      </div>
+      <div class="nav-item" data-page="geo" onclick="navigate('geo')">
+        <span class="nav-icon">🚀</span><span class="nav-label">GEO</span>
+      </div>
+    </nav>
+
+    <div class="sb-section">
+      <div class="sb-section-label">API Status</div>
+      <div class="status-row">
+        <span class="s-dot" id="groq-dot"></span>
+        <span id="groq-txt" style="font-size:0.77rem;">GROQ_API_KEY</span>
+      </div>
+      <div class="status-row">
+        <span class="s-dot" id="zernio-dot"></span>
+        <span id="zernio-txt" style="font-size:0.77rem;">ZERNIO_API_KEY</span>
+      </div>
+    </div>
+
+    <div class="sb-section" id="sess-stats" style="display:none">
+      <div class="sb-section-label">Session Savings</div>
+      <div class="stat-mini-row">
+        <span class="stat-mini-name">Original</span>
+        <span class="stat-mini-val" id="s-orig">$0.0000</span>
+      </div>
+      <div class="stat-mini-row">
+        <span class="stat-mini-name">You Pay</span>
+        <span class="stat-mini-val b" id="s-net">$0.0000</span>
+      </div>
+      <div class="stat-mini-row">
+        <span class="stat-mini-name">Saved</span>
+        <span class="stat-mini-val g" id="s-saved">$0.0000</span>
+      </div>
+    </div>
+
+    <button class="btn-clear" onclick="clearChat()">🗑️ Clear Chat</button>
+  </aside>
+
+  <!-- ═══════════════════ MAIN ═══════════════════ -->
+  <main class="main">
+
+    <!-- ── CHAT ── -->
+    <div class="page active" id="page-chat">
+      <div class="chat-header">
+        <h1>💬 Sponsored AI Chat</h1>
+        <p>Ask me anything — I'll provide helpful answers with relevant sponsored content!</p>
+        <div class="legend-strip">
+          <div class="legend-chip">
+            <div class="legend-dot" style="background:var(--sponsored)"></div>Sponsored Content
+          </div>
+          <div class="legend-chip">
+            <div class="legend-dot" style="background:var(--regular)"></div>Regular Content
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chat-msgs">
+        <div class="empty-state" id="chat-empty">
+          <div class="empty-icon">💬</div>
+          <h3>Start a conversation</h3>
+          <p>Ask about tech, travel, fitness, food — anything! Relevant sponsors will be woven into my answers, helping offset your AI costs.</p>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <div class="input-wrap">
+          <textarea class="chat-ta" id="chat-ta" placeholder="Ask me anything…" rows="1"
+            onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" id="send-btn" onclick="sendMsg()" title="Send">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+              stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ADS GALLERY ── -->
+    <div class="page scrollable" id="page-ads">
+      <div class="pg-header">
+        <h1>📢 Ads Gallery</h1>
+        <p>Browse all sponsored ads available in the RAG system</p>
+      </div>
+      <div class="pg-body">
+        <div class="kpi-strip" id="ads-kpi"></div>
+        <div class="filter-row">
+          <select class="filter-select" id="cat-filter" onchange="filterAds()">
+            <option value="All">All Categories</option>
+          </select>
+          <span class="filter-count" id="filter-cnt"></span>
+        </div>
+        <div class="ads-grid" id="ads-grid"></div>
+      </div>
+    </div>
+
+    <!-- ── ANALYTICS ── -->
+    <div class="page scrollable" id="page-analytics">
+      <div class="pg-header">
+        <h1>📊 Savings Analytics</h1>
+        <p>See exactly how Sponsored AI cuts your API costs through integrated sponsorships.</p>
+        <div class="alert alert-info" style="margin-top:0.7rem;margin-bottom:0;font-size:0.78rem;">
+          📋 Pricing: <strong>GPT-5.2</strong> · $30.00/1M input · $60.00/1M output · Revenue: <strong>$0.005/org</strong> shown · Tokens: word × 1.35
+        </div>
+      </div>
+      <div class="pg-body">
+        <div class="empty-state" id="an-empty">
+          <div class="empty-icon">📊</div>
+          <h3>No session data yet</h3>
+          <p>Head to Chat, ask a few questions, then come back for your full savings breakdown.</p>
+        </div>
+        <div id="an-content" style="display:none">
+          <div class="an-kpi-grid" id="an-kpi"></div>
+          <div class="charts-row">
+            <div class="chart-card"><div class="chart-title">🥧 Cost Breakdown</div><div class="chart-wrap"><canvas id="c-pie"></canvas></div></div>
+            <div class="chart-card"><div class="chart-title">📈 Cost Per Query</div><div class="chart-wrap"><canvas id="c-bar"></canvas></div></div>
+          </div>
+          <div class="charts-row" id="an-row2">
+            <div class="chart-card tall"><div class="chart-title">📉 Cumulative Savings</div><div class="chart-wrap"><canvas id="c-cum"></canvas></div></div>
+            <div class="chart-card tall"><div class="chart-title">🎯 Savings Rate Per Query</div><div class="chart-wrap"><canvas id="c-rate"></canvas></div></div>
+          </div>
+          <div class="chart-card sponsors" id="c-sponsors-card" style="margin-bottom:0.9rem">
+            <div class="chart-title">🏢 Most-Featured Sponsors</div>
+            <div class="chart-wrap"><canvas id="c-sponsors"></canvas></div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th><th>Time</th><th>Query</th>
+                  <th>In Tok</th><th>Out Tok</th>
+                  <th>Original</th><th>Savings</th><th>You Pay</th><th>Saved%</th><th>Sponsors</th>
+                </tr>
+              </thead>
+              <tbody id="an-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── GEO ── -->
+    <div class="page scrollable" id="page-geo">
+      <div class="pg-header">
+        <h1>🚀 Generative Engine Optimization</h1>
+        <p>Describe your idea once — AI generates platform-tuned content and Zernio publishes everywhere.</p>
+      </div>
+      <div class="pg-body">
+
+        <div class="sec-title">🔗 Step 1 — Connect your accounts</div>
+        <div style="display:flex;gap:0.7rem;align-items:center;margin-bottom:0.9rem;">
+          <button class="btn-connect-plat" style="width:auto;padding:0.5rem 1rem;" onclick="refreshAccounts()">
+            🔄 Refresh status
+          </button>
+          <span style="font-size:0.8rem;color:var(--tx3);">Click after completing OAuth in your browser.</span>
+        </div>
+        <div class="plat-grid" id="plat-cards">
+          <div style="color:var(--tx3);font-size:0.84rem;grid-column:1/-1;">Loading accounts…</div>
+        </div>
+        <div id="geo-conn-status"></div>
+
+        <div class="sec-title">✍️ Step 2 — Write your idea</div>
+        <div class="two-col">
+          <div>
+            <label class="form-label">📝 What do you want to post?</label>
+            <textarea class="styled" id="geo-idea" rows="5"
+              placeholder="e.g. We just open-sourced our AI-powered code review tool — it automatically finds bugs, suggests improvements, and learns from your codebase."></textarea>
+            <label class="form-label" style="margin-top:0.8rem;">🌐 Post to (connected platforms only)</label>
+            <div class="plat-checkboxes" id="plat-cbs"></div>
+          </div>
+          <div>
+            <div style="font-size:0.88rem;font-weight:600;margin-bottom:0.7rem;">⚙️ Per-platform settings</div>
+            <div id="plat-settings"><p style="font-size:0.8rem;color:var(--tx3);">Select platforms above to see settings.</p></div>
+          </div>
+        </div>
+
+        <div class="sec-title">🚀 Step 3 — Generate Drafts &amp; Publish</div>
+        <button class="btn-primary" id="geo-btn" onclick="geoGenerate()" style="margin-bottom:1.4rem;">
+          ✨ Generate Drafts
+        </button>
+        <div id="geo-results"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ── Chart.js global defaults ──────────────────────────────────────────────
+Chart.defaults.color          = '#9090b0';
+Chart.defaults.borderColor    = 'rgba(255,255,255,0.06)';
+Chart.defaults.font.family    = "Inter, system-ui, sans-serif";
+Chart.defaults.font.size      = 12;
+
+// ── Constants ─────────────────────────────────────────────────────────────
+const SESS = (() => {
+  let id = localStorage.getItem('sai_sess');
+  if (!id) { id = 'sess_' + Math.random().toString(36).slice(2,11); localStorage.setItem('sai_sess', id); }
+  return id;
+})();
+
+const PLATFORMS = [
+  { slug:'twitter',  label:'Twitter/X',  icon:'🐦', oauth:true,  limit:280  },
+  { slug:'linkedin', label:'LinkedIn',    icon:'💼', oauth:true,  limit:3000 },
+  { slug:'reddit',   label:'Reddit',      icon:'🟠', oauth:true,  limit:40000},
+  { slug:'bluesky',  label:'Bluesky',     icon:'🦋', oauth:false, limit:300  },
+  { slug:'threads',  label:'Threads',     icon:'🧵', oauth:true,  limit:500  },
+];
+
+// ── App state ─────────────────────────────────────────────────────────────
+let msgs        = JSON.parse(localStorage.getItem('sai_msgs')  || '[]');
+let costHistory = [];
+let allAds      = [];
+let connAccts   = {};
+let profileId   = '';
+let oauthUrls   = {};
+let streaming   = false;
+let charts      = {};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════════
+async function init() {
+  await checkStatus();
+  renderHistory();
+  updateSidebarStats();
+}
+
+async function checkStatus() {
+  try {
+    const d = await fetch('/api/status').then(r => r.json());
+    setDot('groq-dot',   'groq-txt',   d.groq,   'GROQ_API_KEY');
+    setDot('zernio-dot', 'zernio-txt', d.zernio, 'ZERNIO_API_KEY');
+  } catch { /* ignore */ }
+}
+function setDot(dotId, txtId, ok, label) {
+  document.getElementById(dotId).className = 's-dot ' + (ok ? 'ok' : 'err');
+  document.getElementById(txtId).textContent = label + (ok ? ' ✓' : ' ✗');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════════════════
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelector(`[data-page="${page}"]`).classList.add('active');
+  if (page === 'ads')       loadAds();
+  if (page === 'analytics') loadAnalytics();
+  if (page === 'geo')       initGeo();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CHAT
+// ═══════════════════════════════════════════════════════════════════════════
+function renderHistory() {
+  const box = document.getElementById('chat-msgs');
+  const empty = document.getElementById('chat-empty');
+  if (!msgs.length) { empty.style.display = 'flex'; return; }
+  empty.style.display = 'none';
+  // Remove old rendered messages
+  [...box.children].forEach(el => { if (el.id !== 'chat-empty') el.remove(); });
+  msgs.forEach(m => {
+    if (m.role === 'user') addUserBubble(m.content, false);
+    else addAiBubble(m.content, m.cost, false);
+  });
+  scrollBottom();
+}
+
+function addUserBubble(text, scroll = true) {
+  const box = document.getElementById('chat-msgs');
+  document.getElementById('chat-empty').style.display = 'none';
+  const el = mk('div', 'message');
+  el.innerHTML = `<div class="msg-role user">You</div>
+    <div class="msg-bubble user">${esc(text)}</div>`;
+  box.appendChild(el);
+  if (scroll) scrollBottom();
+}
+
+function addAiBubble(text, cost, scroll = true) {
+  const box = document.getElementById('chat-msgs');
+  const el = mk('div', 'message');
+  el.innerHTML = `<div class="msg-role ai">Sponsored AI</div>
+    <div class="msg-bubble ai">${colorize(text)}</div>
+    ${cost ? costMeta(cost) : ''}`;
+  box.appendChild(el);
+  if (scroll) scrollBottom();
+  return el;
+}
+
+function colorize(text) {
+  const re = /\[SPONSORED\]([\s\S]*?)\[\/SPONSORED\]/g;
+  let out = '', last = 0, m;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) {
+      const r = esc(text.slice(last, m.index));
+      if (r.trim()) out += `<span class="regular-text">${r}</span>`;
+    }
+    out += `<span class="sponsored-text">${esc(m[1])}</span>`;
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) {
+    const r = esc(text.slice(last));
+    if (r.trim()) out += `<span class="regular-text">${r}</span>`;
+  }
+  return out || esc(text);
+}
+
+function costMeta(c) {
+  const orgs = (c.orgs_featured||[]).length
+    ? c.orgs_featured.map(o => `<span class="org-chip">${esc(o)}</span>`).join('')
+    : `<span style="color:var(--tx3)">none</span>`;
+  const saved = c.savings_usd > 0 ? `+${usd(c.savings_usd)} saved` : 'no savings';
+  return `<div class="cost-meta">
+    <div class="cm-item"><span class="cm-label">⚙️ Model</span><span class="cm-val">GPT-5.2</span></div>
+    <div class="cm-item"><span class="cm-label">🔢 Tokens</span><span class="cm-val">${c.input_tokens} in · ${c.output_tokens} out</span></div>
+    <div class="cm-item"><span class="cm-label">💸 Original</span><span class="cm-val x">${usd(c.original_cost_usd)}</span></div>
+    <div class="cm-item"><span class="cm-label">💚 You Pay</span><span class="cm-val b">${usd(c.your_cost_usd)}</span></div>
+    <div class="cm-item"><span class="cm-label">🏷️ Savings</span><span class="cm-val g">${saved} (${c.savings_pct}%)</span></div>
+    <div class="cm-item" style="min-width:160px"><span class="cm-label">🏢 Sponsors</span><span class="cm-val">${orgs}</span></div>
+    <div class="cm-footer">Pricing: $30.00/1M input · $60.00/1M output &nbsp;|&nbsp; Revenue: $0.005/org</div>
+  </div>`;
+}
+
+async function sendMsg() {
+  const ta = document.getElementById('chat-ta');
+  const prompt = ta.value.trim();
+  if (!prompt || streaming) return;
+  ta.value = ''; autoResize(ta);
+  streaming = true;
+  document.getElementById('send-btn').disabled = true;
+
+  msgs.push({ role:'user', content: prompt });
+  saveMsgs();
+  addUserBubble(prompt);
+
+  const box = document.getElementById('chat-msgs');
+  const typingEl = mk('div', 'typing');
+  typingEl.innerHTML = `<div class="typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>Generating response…`;
+  box.appendChild(typingEl); scrollBottom();
+
+  try {
+    const resp = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, session_id: SESS }),
+    });
+
+    typingEl.remove();
+
+    if (!resp.ok) {
+      const errTxt = await resp.text().catch(() => '');
+      throw new Error(`Server ${resp.status}: ${errTxt.slice(0, 200)}`);
+    }
+
+    const reader  = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let full = '', aiEl = null, bubble = null, buf = '';
+
+    aiEl = mk('div', 'message');
+    aiEl.innerHTML = `<div class="msg-role ai">Sponsored AI</div>
+      <div class="msg-bubble ai"></div>`;
+    box.appendChild(aiEl);
+    bubble = aiEl.querySelector('.msg-bubble');
+
+    // Labeled loop so inner-loop can break the outer while
+    outer: while (true) {
+      const { done, value } = await reader.read();
+      if (done) break outer;
+
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop(); // keep incomplete last line in buffer
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try {
+          const d = JSON.parse(line.slice(6));
+          if (d.type === 'chunk') {
+            full += d.content;
+            bubble.innerHTML = colorize(full);
+            scrollBottom();
+          } else if (d.type === 'done') {
+            aiEl.insertAdjacentHTML('beforeend', costMeta(d.cost));
+            msgs.push({ role:'assistant', content: full, cost: d.cost });
+            saveMsgs();
+            costHistory = await fetchCostHistory();
+            updateSidebarStats();
+            scrollBottom();
+            reader.cancel(); // close the SSE stream — don't wait for server to end it
+            break outer;     // exit the while loop immediately
+          } else if (d.type === 'error') {
+            bubble.innerHTML = `<span style="color:var(--red)">⚠ ${esc(d.message)}</span>`;
+            reader.cancel();
+            break outer;
+          }
+        } catch { /* skip malformed SSE line */ }
+      }
+    }
+  } catch (e) {
+    const deadTyping = document.querySelector('.typing');
+    if (deadTyping) deadTyping.remove();
+    toast('Chat error: ' + e.message, 'err');
+  } finally {
+    // Always re-enable — this runs even after break outer
+    streaming = false;
+    document.getElementById('send-btn').disabled = false;
+    document.getElementById('chat-ta').focus();
+  }
+}
+
+async function clearChat() {
+  msgs = []; saveMsgs();
+  await fetch('/api/clear-history', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_id: SESS }),
+  });
+  costHistory = [];
+  updateSidebarStats();
+  const box = document.getElementById('chat-msgs');
+  [...box.children].forEach(el => { if (el.id !== 'chat-empty') el.remove(); });
+  document.getElementById('chat-empty').style.display = 'flex';
+  toast('Chat cleared', 'ok');
+}
+
+function updateSidebarStats() {
+  if (!costHistory.length) { document.getElementById('sess-stats').style.display = 'none'; return; }
+  document.getElementById('sess-stats').style.display = 'block';
+  const orig  = costHistory.reduce((s,e) => s + e.cost.original_cost_usd, 0);
+  const net   = costHistory.reduce((s,e) => s + e.cost.your_cost_usd,     0);
+  const saved = costHistory.reduce((s,e) => s + e.cost.savings_usd,       0);
+  document.getElementById('s-orig').textContent  = usd(orig);
+  document.getElementById('s-net').textContent   = usd(net);
+  document.getElementById('s-saved').textContent = usd(saved);
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+}
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+function scrollBottom() {
+  const b = document.getElementById('chat-msgs');
+  b.scrollTop = b.scrollHeight;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ADS GALLERY
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadAds() {
+  if (allAds.length) { renderAds(); return; }
+  try {
+    allAds = await fetch('/api/ads').then(r => r.json());
+    renderAds();
+  } catch (e) { toast('Failed to load ads', 'err'); }
+}
+
+function renderAds() {
+  const cats = [...new Set(allAds.map(a => a.category))];
+  const cos  = [...new Set(allAds.map(a => a.company))];
+
+  document.getElementById('ads-kpi').innerHTML = [
+    ['Total Ads', allAds.length], ['Categories', cats.length], ['Companies', cos.length]
+  ].map(([l,v]) => `<div class="kpi-card"><div class="kpi-val">${v}</div><div class="kpi-label">${l}</div></div>`).join('');
+
+  const sel = document.getElementById('cat-filter');
+  sel.innerHTML = '<option value="All">All Categories</option>';
+  cats.sort().forEach(c => sel.innerHTML += `<option value="${c}">${c}</option>`);
+
+  filterAds();
+}
+
+function filterAds() {
+  const cat = document.getElementById('cat-filter').value;
+  const filtered = cat === 'All' ? allAds : allAds.filter(a => a.category === cat);
+  document.getElementById('filter-cnt').textContent = `Showing ${filtered.length} ads`;
+  document.getElementById('ads-grid').innerHTML = filtered.map(ad => `
+    <div class="ad-card">
+      <div class="ad-company">${esc(ad.company)}</div>
+      <span class="ad-cat-badge">${esc(ad.category)}</span>
+      <div class="ad-text">${esc(ad.ad_text)}</div>
+      <div class="ad-kws">${(ad.keywords||[]).slice(0,5).map(k=>`<span class="kw-tag">${esc(k)}</span>`).join('')}</div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ANALYTICS
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadAnalytics() {
+  costHistory = await fetchCostHistory();
+  renderAnalytics();
+}
+
+function renderAnalytics() {
+  const empty = document.getElementById('an-empty');
+  const cont  = document.getElementById('an-content');
+  if (!costHistory.length) {
+    empty.style.display = 'flex'; cont.style.display = 'none'; return;
+  }
+  empty.style.display = 'none'; cont.style.display = 'block';
+
+  const orig   = costHistory.reduce((s,e) => s+e.cost.original_cost_usd,  0);
+  const net    = costHistory.reduce((s,e) => s+e.cost.your_cost_usd,      0);
+  const saved  = costHistory.reduce((s,e) => s+e.cost.savings_usd,        0);
+  const rev    = costHistory.reduce((s,e) => s+e.cost.revenue_earned_usd, 0);
+  const allOrgs= costHistory.flatMap(e => e.cost.orgs_featured||[]);
+  const uniq   = [...new Set(allOrgs)];
+  const pct    = orig > 0 ? (saved/orig*100).toFixed(1) : '0.0';
+  const wSav   = costHistory.filter(e => e.cost.savings_usd > 0).length;
+
+  document.getElementById('an-kpi').innerHTML = [
+    { l:'Total Queries',   v:costHistory.length,   s:`${wSav} with savings`,      c:'var(--blue-light)' },
+    { l:'Original Cost',   v:usd(orig),            s:'without sponsorship',       c:'var(--tx3)' },
+    { l:'You Pay',         v:usd(net),             s:'net after savings',         c:'var(--blue-light)' },
+    { l:'Total Saved',     v:usd(saved),           s:`${pct}% reduction`,         c:'var(--green)' },
+    { l:'Revenue Earned',  v:usd(rev),             s:'from sponsors',             c:'var(--gold)' },
+    { l:'Sponsors Shown',  v:allOrgs.length,       s:`${uniq.length} unique`,     c:'var(--gold)' },
+  ].map(({l,v,s,c}) => `
+    <div class="an-kpi-card">
+      <div class="an-kpi-label">${l}</div>
+      <div class="an-kpi-val" style="color:${c}">${v}</div>
+      <div class="an-kpi-sub">${s}</div>
+    </div>`).join('');
+
+  buildPie(net, saved, pct);
+  buildBar();
+  if (costHistory.length >= 2) {
+    document.getElementById('an-row2').style.display = '';
+    buildCum(); buildRate();
+  } else {
+    document.getElementById('an-row2').style.display = 'none';
+  }
+  if (allOrgs.length) {
+    document.getElementById('c-sponsors-card').style.display = '';
+    buildSponsors(allOrgs);
+  } else {
+    document.getElementById('c-sponsors-card').style.display = 'none';
+  }
+  buildTable();
+}
+
+function buildPie(net, saved, pct) {
+  destroyChart('pie');
+  const ctx = document.getElementById('c-pie').getContext('2d');
+  charts.pie = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['You Pay', 'Sponsor Offset'],
+      datasets: [{ data: [Math.max(net,0), Math.max(saved,0)],
+        backgroundColor: ['rgba(91,106,248,0.75)','rgba(34,197,94,0.75)'],
+        borderColor:     ['#5b6af8','#22c55e'], borderWidth: 2 }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio: false, cutout:'54%',
+      plugins: {
+        legend: { labels: { color:'#9090b0' } },
+        tooltip: { callbacks: { label: c => ` ${c.label}: $${c.parsed.toFixed(6)}` } },
+      }
+    },
+    plugins: [{
+      id:'centerText',
+      beforeDraw(ch) {
+        const {width:w,height:h,ctx:c2} = ch;
+        c2.restore();
+        c2.font = 'bold 1.1rem Inter,sans-serif';
+        c2.fillStyle = '#22c55e'; c2.textAlign='center'; c2.textBaseline='middle';
+        c2.fillText(`${pct}%`, w/2, h/2-9);
+        c2.font = '0.67rem Inter,sans-serif';
+        c2.fillStyle = '#9090b0';
+        c2.fillText('saved', w/2, h/2+11);
+        c2.save();
+      }
+    }]
+  });
+}
+
+function buildBar() {
+  destroyChart('bar');
+  const labels = costHistory.map((_,i)=>`Q${i+1}`);
+  const ctx = document.getElementById('c-bar').getContext('2d');
+  charts.bar = new Chart(ctx, {
+    type:'bar',
+    data: { labels, datasets:[
+      { label:'Original', data: costHistory.map(e=>e.cost.original_cost_usd), backgroundColor:'rgba(136,136,136,0.35)', borderColor:'#555' },
+      { label:'You Pay',  data: costHistory.map(e=>e.cost.your_cost_usd),     backgroundColor:'rgba(91,106,248,0.65)',  borderColor:'#5b6af8' },
+      { label:'Savings',  data: costHistory.map(e=>e.cost.savings_usd),       backgroundColor:'rgba(34,197,94,0.65)',  borderColor:'#22c55e' },
+    ]},
+    options: {
+      responsive:true, maintainAspectRatio: false,
+      plugins:{ legend:{ labels:{color:'#9090b0'} } },
+      scales:{
+        x:{ ticks:{color:'#9090b0'}, grid:{color:'rgba(255,255,255,0.04)'} },
+        y:{ ticks:{color:'#9090b0', callback:v=>`$${v.toFixed(6)}`}, grid:{color:'rgba(255,255,255,0.04)'} }
+      }
+    }
+  });
+}
+
+function buildCum() {
+  destroyChart('cum');
+  let co=0, cn=0, cs=0;
+  const od=[], nd=[], sd=[];
+  costHistory.forEach(e => {
+    co+=e.cost.original_cost_usd; cn+=e.cost.your_cost_usd; cs+=e.cost.savings_usd;
+    od.push(co); nd.push(cn); sd.push(cs);
+  });
+  const labels = costHistory.map((_,i)=>i+1);
+  const ctx = document.getElementById('c-cum').getContext('2d');
+  charts.cum = new Chart(ctx, {
+    type:'line',
+    data:{ labels, datasets:[
+      { label:'Original', data:od, borderColor:'#555', borderDash:[5,5], pointRadius:3 },
+      { label:'You Pay',  data:nd, borderColor:'#5b6af8', pointRadius:4 },
+      { label:'Saved',    data:sd, borderColor:'#22c55e', pointRadius:4,
+        fill:'origin', backgroundColor:'rgba(34,197,94,0.06)' },
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio: false,
+      plugins:{ legend:{ labels:{color:'#9090b0'} } },
+      scales:{
+        x:{ ticks:{color:'#9090b0'}, grid:{color:'rgba(255,255,255,0.04)'} },
+        y:{ ticks:{color:'#9090b0', callback:v=>`$${v.toFixed(6)}`}, grid:{color:'rgba(255,255,255,0.04)'} }
+      }
+    }
+  });
+}
+
+function buildRate() {
+  destroyChart('rate');
+  const labels = costHistory.map((_,i)=>`Q${i+1}`);
+  const rates  = costHistory.map(e=>e.cost.savings_pct);
+  const avg    = rates.reduce((a,b)=>a+b,0)/rates.length;
+  const colors = rates.map(r => r>=50 ? 'rgba(34,197,94,0.7)' : r>0 ? 'rgba(249,115,22,0.7)' : 'rgba(239,68,68,0.7)');
+  const ctx = document.getElementById('c-rate').getContext('2d');
+  charts.rate = new Chart(ctx, {
+    type:'bar',
+    data:{ labels, datasets:[{ label:'Savings %', data:rates, backgroundColor:colors }]},
+    options:{
+      responsive:true, maintainAspectRatio: false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{ ticks:{color:'#9090b0'}, grid:{color:'rgba(255,255,255,0.04)'} },
+        y:{ ticks:{color:'#9090b0', callback:v=>`${v}%`}, grid:{color:'rgba(255,255,255,0.04)'},
+          suggestedMax: Math.max(...rates)*1.2 || 10 },
+      }
+    },
+    plugins:[{
+      id:'avgLine',
+      afterDatasetsDraw(ch) {
+        const {ctx:c2,chartArea:{left,right},scales:{y}} = ch;
+        const yPos = y.getPixelForValue(avg);
+        c2.save(); c2.strokeStyle='#f59e0b'; c2.setLineDash([5,5]); c2.lineWidth=1.5;
+        c2.beginPath(); c2.moveTo(left,yPos); c2.lineTo(right,yPos); c2.stroke();
+        c2.fillStyle='#f59e0b'; c2.font='11px Inter,sans-serif'; c2.textAlign='right';
+        c2.fillText(`avg ${avg.toFixed(1)}%`, right, yPos-5);
+        c2.restore();
+      }
+    }]
+  });
+}
+
+function buildSponsors(allOrgs) {
+  destroyChart('sponsors');
+  const counts = {};
+  allOrgs.forEach(o => { counts[o]=(counts[o]||0)+1; });
+  const sorted = Object.entries(counts).sort((a,b)=>a[1]-b[1]);
+  const wrap = document.querySelector('#c-sponsors-card .chart-wrap');
+  const h = Math.min(300, Math.max(150, sorted.length * 40));
+  wrap.style.height = h + 'px';
+  const ctx = document.getElementById('c-sponsors').getContext('2d');
+  charts.sponsors = new Chart(ctx, {
+    type:'bar',
+    data:{ labels:sorted.map(([n])=>n), datasets:[{
+      label:'Times Featured', data:sorted.map(([,c])=>c),
+      backgroundColor:'rgba(91,106,248,0.6)', borderColor:'#5b6af8', borderWidth:1,
+    }]},
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio: false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{ ticks:{color:'#9090b0', stepSize:1}, grid:{color:'rgba(255,255,255,0.04)'} },
+        y:{ ticks:{color:'#9090b0'}, grid:{color:'rgba(255,255,255,0.04)'} }
+      }
+    }
+  });
+}
+
+function buildTable() {
+  document.getElementById('an-tbody').innerHTML = costHistory.map((e,i) => {
+    const c  = e.cost;
+    const ts = e.timestamp ? (e.timestamp.split('T')[1]||e.timestamp).slice(0,8) : `Q${i+1}`;
+    const orgs = (c.orgs_featured||[]).map(o=>`<span class="org-chip">${esc(o)}</span>`).join('') || '—';
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${ts}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis">${esc(e.prompt_snippet||`Q${i+1}`)}</td>
+      <td>${c.input_tokens}</td><td>${c.output_tokens}</td>
+      <td style="color:var(--tx3);text-decoration:line-through">${usd(c.original_cost_usd)}</td>
+      <td style="color:var(--green)">${usd(c.savings_usd)}</td>
+      <td style="color:var(--blue-light);font-weight:600">${usd(c.your_cost_usd)}</td>
+      <td style="color:${c.savings_pct>=50?'var(--green)':'var(--orange)'}">${c.savings_pct}%</td>
+      <td>${orgs}</td>
+    </tr>`;
+  }).join('');
+}
+
+function destroyChart(key) {
+  if (charts[key]) { charts[key].destroy(); delete charts[key]; }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GEO
+// ═══════════════════════════════════════════════════════════════════════════
+async function initGeo() { await refreshAccounts(); }
+
+async function refreshAccounts() {
+  const grid = document.getElementById('plat-cards');
+  grid.innerHTML = `<div style="color:var(--tx3);font-size:0.84rem;grid-column:1/-1"><span class="spinner"></span> Loading accounts…</div>`;
+
+  try {
+    const data = await fetch(`/api/geo/accounts?session_id=${SESS}`).then(r=>r.json());
+    if (data.error) { grid.innerHTML=`<div class="alert alert-error" style="grid-column:1/-1">${esc(data.error)}</div>`; return; }
+    connAccts  = data.connected || {};
+    profileId  = data.profile_id || '';
+    renderPlatCards();
+    renderPlatCbs();
+    renderConnStatus();
+  } catch(e) {
+    grid.innerHTML = `<div class="alert alert-error" style="grid-column:1/-1">${esc(e.message)}</div>`;
+  }
+}
+
+function renderPlatCards() {
+  document.getElementById('plat-cards').innerHTML = PLATFORMS.map(p => {
+    const conn    = p.slug in connAccts;
+    const badge   = conn
+      ? `<span class="plat-badge connected">✅ Connected</span>`
+      : `<span class="plat-badge disconnected">⚠ Not connected</span>`;
+    let extra = '';
+    if (!conn) {
+      if (p.oauth) {
+        extra = `<button class="btn-connect-plat" onclick="connectOAuth('${p.slug}','${esc(p.label)}')">Connect ${p.label}</button>`;
+        if (oauthUrls[p.slug]) {
+          extra += `<div class="oauth-link-box"><strong style="color:var(--blue-light)">Open this link:</strong><br>
+            <a href="${esc(oauthUrls[p.slug])}" target="_blank">${esc(oauthUrls[p.slug])}</a>
+            <br><small style="color:var(--tx3)">After connecting → Refresh status</small></div>`;
+        }
+      } else {
+        extra = `<button class="btn-connect-plat" onclick="toggleBskyForm()">Connect ${p.label}</button>
+          <div class="bsky-form" id="bsky-form">
+            <div class="form-group"><label class="form-label">Handle</label><input class="styled" id="bsky-h" placeholder="yourname.bsky.social"></div>
+            <div class="form-group"><label class="form-label">App Password</label><input class="styled" type="password" id="bsky-p" placeholder="xxxx-xxxx-xxxx-xxxx"></div>
+            <button class="btn-connect-plat" onclick="connectBsky()">Connect</button>
+          </div>`;
+      }
+    }
+    return `<div class="plat-card ${conn?'connected':'disconnected'}">
+      <div class="plat-icon">${p.icon}</div>
+      <div class="plat-name">${p.label}</div>
+      ${badge}${extra}
+    </div>`;
+  }).join('');
+}
+
+function renderPlatCbs() {
+  const connected = PLATFORMS.filter(p => p.slug in connAccts);
+  const el = document.getElementById('plat-cbs');
+  if (!connected.length) { el.innerHTML='<p style="font-size:0.8rem;color:var(--tx3)">No platforms connected yet.</p>'; return; }
+  el.innerHTML = connected.map(p =>
+    `<label class="plat-cb-label"><input type="checkbox" name="plat" value="${p.slug}" checked onchange="updatePlatSettings()"> ${p.icon} ${p.label}</label>`
+  ).join('');
+  updatePlatSettings();
+}
+
+function renderConnStatus() {
+  const slugs = Object.keys(connAccts);
+  const el = document.getElementById('geo-conn-status');
+  if (!slugs.length) {
+    el.innerHTML = `<div class="alert alert-info">No platforms connected yet. Use Connect buttons above, complete OAuth, then Refresh.</div>`;
+    return;
+  }
+  const labels = slugs.map(s => { const p = PLATFORMS.find(x=>x.slug===s); return p?`${p.icon} ${p.label}`:s; });
+  el.innerHTML = `<div class="alert alert-success">✅ Connected: ${labels.join(', ')}</div>`;
+}
+
+function getSelSlugs() {
+  return [...document.querySelectorAll('#plat-cbs input:checked')].map(e=>e.value);
+}
+
+function updatePlatSettings() {
+  const slugs = getSelSlugs();
+  const el = document.getElementById('plat-settings');
+  let html = '';
+  if (slugs.includes('reddit')) {
+    html += `<div class="form-group"><label class="form-label">Reddit – subreddit (without r/)</label><input class="styled" id="reddit-sub" placeholder="e.g. SideProject"></div>
+      <div class="form-group"><label class="form-label">Reddit – post title (optional)</label><input class="styled" id="reddit-title" placeholder="Defaults to first line of content"></div>`;
+  }
+  if (slugs.includes('twitter')) html += `<div class="alert alert-info" style="margin-bottom:0.5rem">🐦 Twitter/X auto-trimmed to 280 chars.</div>`;
+  if (slugs.includes('bluesky')) html += `<div class="alert alert-info" style="margin-bottom:0.5rem">🦋 Bluesky hard limit: 300 chars.</div>`;
+  if (slugs.includes('threads')) html += `<div class="alert alert-info" style="margin-bottom:0.5rem">🧵 Threads limit: 500 chars.</div>`;
+  if (!html) html = `<p style="font-size:0.8rem;color:var(--tx3)">No special settings for selected platforms.</p>`;
+  el.innerHTML = html;
+}
+
+function toggleBskyForm() {
+  const f = document.getElementById('bsky-form');
+  if (f) f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+
+async function connectOAuth(slug, label) {
+  if (!profileId) { toast('Profile not ready — click Refresh status first.', 'err'); return; }
+  try {
+    const d = await fetch('/api/geo/connect-oauth', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ platform: slug, profile_id: profileId }),
+    }).then(r=>r.json());
+    if (d.error) { toast(d.error, 'err'); return; }
+    if (d.url) { oauthUrls[slug] = d.url; renderPlatCards(); toast(`OAuth link ready for ${label}`, 'info'); }
+  } catch(e) { toast('Failed: '+e.message, 'err'); }
+}
+
+async function connectBsky() {
+  const h = document.getElementById('bsky-h')?.value?.trim();
+  const p = document.getElementById('bsky-p')?.value?.trim();
+  if (!h||!p) { toast('Enter handle and app password.','err'); return; }
+  if (!profileId) { toast('Profile not ready — Refresh first.','err'); return; }
+  try {
+    const d = await fetch('/api/geo/connect-bluesky', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ profile_id: profileId, identifier: h, password: p }),
+    }).then(r=>r.json());
+    if (d.error) { toast(d.error,'err'); } else { toast('Bluesky connected! Click Refresh.','ok'); }
+  } catch(e) { toast('Failed: '+e.message,'err'); }
+}
+
+// GEO state
+let geoCurrentSlugs  = [];
+let geoCurrentLabels = [];
+
+async function geoGenerate() {
+  const idea  = document.getElementById('geo-idea').value.trim();
+  const slugs = getSelSlugs();
+
+  if (!idea)         { toast('Describe what you want to post.', 'err'); return; }
+  if (!slugs.length) { toast('Select at least one platform.',  'err'); return; }
+  if (slugs.includes('reddit')) {
+    const sub = document.getElementById('reddit-sub')?.value?.trim();
+    if (!sub) { toast('Enter a subreddit for Reddit.', 'err'); return; }
+  }
+
+  const btn = document.getElementById('geo-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Generating…';
+  document.getElementById('geo-results').innerHTML = '';
+
+  const labels = slugs.map(s => { const p = PLATFORMS.find(x=>x.slug===s); return p ? p.label : s; });
+
+  try {
+    const gen = await fetch('/api/geo/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idea, platforms: labels }),
+    }).then(r => r.json());
+
+    if (gen.error) {
+      document.getElementById('geo-results').innerHTML = `<div class="alert alert-error">${esc(gen.error)}</div>`;
+      return;
+    }
+
+    // Save slugs/labels so geoPublish() can reference them
+    geoCurrentSlugs  = slugs;
+    geoCurrentLabels = labels;
+
+    // Build editable draft cards
+    let html = '<div class="sec-title">📄 Review &amp; Edit Drafts Before Publishing</div>';
+    labels.forEach(label => {
+      const p    = PLATFORMS.find(x => x.label === label);
+      const slug = p ? p.slug : label;
+      const text = gen[label] || '';
+      const lim  = p ? p.limit : 0;
+      const ch   = text.length;
+      const cls  = lim && ch > lim ? 'over' : lim && ch > lim * 0.9 ? 'close' : 'ok';
+      html += `<div class="draft-card">
+        <div class="draft-hdr">${p ? p.icon : '📝'} ${esc(label)}</div>
+        <textarea class="styled" id="draft-${slug}"
+          style="margin-top:0.55rem;min-height:110px;font-size:0.85rem;line-height:1.6"
+          oninput="updateCharCount(this,${lim},'cc-${slug}')"
+        >${esc(text)}</textarea>
+        <div class="char-ctr ${cls}" id="cc-${slug}">${lim ? ch+'/'+lim+' chars' : ch+' chars'}</div>
+      </div>`;
+    });
+
+    html += `
+      <div style="margin-top:1.2rem;display:flex;gap:0.8rem;align-items:center;flex-wrap:wrap;">
+        <button class="btn-primary" id="geo-pub-btn" onclick="geoPublish()"
+          style="background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 0 18px rgba(34,197,94,0.25);">
+          🚀 Publish to All Platforms
+        </button>
+        <button onclick="geoGenerate()"
+          style="background:transparent;border:1px solid var(--border2);border-radius:8px;color:var(--tx2);
+                 font-family:inherit;font-size:0.83rem;padding:0.48rem 1rem;cursor:pointer;">
+          🔄 Regenerate
+        </button>
+      </div>
+      <div id="geo-pub-results" style="margin-top:1rem;"></div>`;
+
+    document.getElementById('geo-results').innerHTML = html;
+
+  } catch(e) {
+    document.getElementById('geo-results').innerHTML = `<div class="alert alert-error">${esc(e.message)}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '✨ Generate Drafts';
+  }
+}
+
+function updateCharCount(ta, lim, ccId) {
+  const el = document.getElementById(ccId);
+  if (!el) return;
+  const ch  = ta.value.length;
+  const cls = lim && ch > lim ? 'over' : lim && ch > lim * 0.9 ? 'close' : 'ok';
+  el.className = 'char-ctr ' + cls;
+  el.textContent = lim ? `${ch}/${lim} chars` : `${ch} chars`;
+}
+
+async function geoPublish() {
+  const pubBtn = document.getElementById('geo-pub-btn');
+  const resDiv = document.getElementById('geo-pub-results');
+  pubBtn.disabled = true;
+  pubBtn.innerHTML = '<span class="spinner"></span> Publishing…';
+  resDiv.innerHTML = '';
+
+  const redditSub   = document.getElementById('reddit-sub')?.value?.trim()   || '';
+  const redditTitle = document.getElementById('reddit-title')?.value?.trim() || '';
+
+  const targets = geoCurrentSlugs.map(slug => {
+    const acc = connAccts[slug];
+    if (!acc) return null;
+    const p   = PLATFORMS.find(x => x.slug === slug);
+    const lbl = p ? p.label : slug;
+    // Read content from editable textarea so user edits are honoured
+    const ta  = document.getElementById(`draft-${slug}`);
+    const content = (ta ? ta.value : '').trim() || '';
+    if (!content) return null;
+    const t = {
+      platform:  slug,
+      accountId: acc._id || acc.id || acc.field_id || '',
+      content,
+    };
+    if (slug === 'reddit') {
+      const ttl = redditTitle || (content.split('\n')[0] || 'Update from Sponsored AI').slice(0, 300);
+      t.platformSpecificData = { subreddit: redditSub, title: ttl, forceSelf: true };
+    }
+    return t;
+  }).filter(Boolean);
+
+  if (!targets.length) {
+    resDiv.innerHTML = `<div class="alert alert-error">No valid targets — make sure platforms are connected and content is not empty.</div>`;
+    pubBtn.disabled = false;
+    pubBtn.innerHTML = '🚀 Publish to All Platforms';
+    return;
+  }
+
+  try {
+    const pub = await fetch('/api/geo/publish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ platform_targets: targets }),
+    }).then(r => r.json());
+
+    if (pub.error) {
+      resDiv.innerHTML = `<div class="alert alert-error">${esc(pub.error)}</div>`;
+      return;
+    }
+
+    const os = pub.status || 'unknown';
+    let html = os === 'published'
+      ? `<div class="alert alert-success">✅ Published successfully to all platforms!</div>`
+      : os === 'partial'
+      ? `<div class="alert alert-warn">⚠️ Partial success — check individual results below.</div>`
+      : `<div class="alert alert-error">❌ Publishing failed: ${esc(os)}</div>`;
+
+    html += '<div class="sec-title" style="margin-top:1rem;">📤 Publishing Results</div>';
+    (pub.platforms || []).forEach(pr => {
+      const p   = PLATFORMS.find(x => x.slug === pr.platform);
+      const ok  = pr.status === 'published';
+      const url = pr.platformPostUrl
+        ? `<a href="${esc(pr.platformPostUrl)}" target="_blank"
+             style="color:var(--blue-light);font-size:0.79rem;display:block;margin-top:0.3rem;">View post ↗</a>`
+        : '';
+      const err = pr.error
+        ? `<span style="color:var(--red);font-size:0.78rem;display:block;margin-top:0.25rem">${esc((pr.error+'').slice(0,200))}</span>`
+        : '';
+      html += `<div class="result-card ${ok?'ok':'err'}">
+        <strong>${p?p.icon:'📢'} ${p?p.label:pr.platform}</strong>
+        &nbsp;—&nbsp; ${ok ? '✅ Published' : '❌ '+esc(pr.status||'failed')}
+        ${url}${err}
+      </div>`;
+    });
+    resDiv.innerHTML = html;
+
+  } catch(e) {
+    resDiv.innerHTML = `<div class="alert alert-error">${esc(e.message)}</div>`;
+  } finally {
+    pubBtn.disabled = false;
+    pubBtn.innerHTML = '🚀 Publish to All Platforms';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════════════════
+function esc(s) {
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(String(s ?? '')));
+  return d.innerHTML;
+}
+function usd(v) {
+  if (v < 0.0001 && v > 0) return `$${v.toFixed(6)}`;
+  return `$${v.toFixed(4)}`;
+}
+function mk(tag, cls) {
+  const el = document.createElement(tag);
+  if (cls) el.className = cls;
+  return el;
+}
+function saveMsgs() {
+  localStorage.setItem('sai_msgs', JSON.stringify(msgs));
+}
+async function fetchCostHistory() {
+  try { return await fetch(`/api/cost-history?session_id=${SESS}`).then(r=>r.json()); }
+  catch { return []; }
+}
+function toast(msg, type='info') {
+  const box = document.getElementById('toasts');
+  const el = mk('div', `toast ${type}`);
+  const icon = type==='ok'?'✅':type==='err'?'❌':'ℹ️';
+  el.innerHTML = `${icon} ${esc(msg)}`;
+  box.appendChild(el);
+  setTimeout(() => el.remove(), 4200);
+}
+
+// ── Boot ────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
